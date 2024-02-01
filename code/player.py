@@ -1,8 +1,6 @@
 from os import path, walk
 import pygame
 
-from settings import TILESIZE
-
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, position, groups: list):
@@ -15,7 +13,7 @@ class Player(pygame.sprite.Sprite):
         self.animation_speed = 0.05
         self.direction = pygame.math.Vector2()
         self.image = self.animations[self.status][self.frame_index]
-        self.rect = self.image.get_rect(topleft=position)
+        self.rect = self.image.get_rect(center=position)
         self.speed = 5.0
 
     @staticmethod
