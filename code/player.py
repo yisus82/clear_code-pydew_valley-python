@@ -1,5 +1,7 @@
-from os import path, walk
+from os import path
 import pygame
+
+from utils import import_folder
 
 
 class Player(pygame.sprite.Sprite):
@@ -18,20 +20,6 @@ class Player(pygame.sprite.Sprite):
         self.direction = pygame.math.Vector2()
         self.position = pygame.math.Vector2(self.rect.center)
 
-    @staticmethod
-    def import_folder(folder):
-        pathname = path.normpath(folder)
-        image_surfaces = []
-        for _, _, filenames in walk(pathname):
-            for filename in sorted(filenames):
-                full_path = path.join(pathname, filename)
-                try:
-                    image_surface = pygame.image.load(full_path).convert_alpha()
-                    image_surfaces.append(image_surface)
-                except pygame.error:
-                    pass
-        return image_surfaces
-
     def import_animations(self):
         player_folder = path.join('..', 'graphics', 'player')
         self.animations = {
@@ -46,7 +34,7 @@ class Player(pygame.sprite.Sprite):
         }
         for animation_name in self.animations.keys():
             animation_folder = path.join(player_folder, animation_name)
-            self.animations[animation_name] = self.import_folder(animation_folder)
+            self.animations[animation_name] = import_folder(animation_folder)
 
     def input(self):
         keys = pygame.key.get_pressed()
