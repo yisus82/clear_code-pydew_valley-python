@@ -5,9 +5,11 @@ from player import Player
 class Level:
     def __init__(self):
         self.display_surface = pygame.display.get_surface()
-        self.player = Player((self.display_surface.get_width() / 2, self.display_surface.get_height() / 2), [])
+        self.all_sprites = pygame.sprite.Group()
+        self.player = Player((self.display_surface.get_width() / 2, self.display_surface.get_height() / 2),
+                             [self.all_sprites])
 
     def run(self):
         self.display_surface.fill("black")
-        self.player.update()
-        self.player.draw(self.display_surface)
+        self.all_sprites.update()
+        self.all_sprites.draw(self.display_surface)

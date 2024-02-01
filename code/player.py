@@ -5,16 +5,18 @@ import pygame
 class Player(pygame.sprite.Sprite):
     def __init__(self, position, groups: list):
         super().__init__()
-        self.groups = groups
+        for group in groups:
+            group.add(self)
         self.animations = {}
         self.import_animations()
         self.status = 'down_idle'
         self.frame_index = 0
         self.animation_speed = 0.05
-        self.direction = pygame.math.Vector2()
         self.image = self.animations[self.status][self.frame_index]
         self.rect = self.image.get_rect(center=position)
         self.speed = 5.0
+        self.direction = pygame.math.Vector2()
+        self.position = pygame.math.Vector2(self.rect.center)
 
     @staticmethod
     def import_folder(folder):
@@ -77,7 +79,12 @@ class Player(pygame.sprite.Sprite):
         if self.rect is not None:
             if self.direction.magnitude() != 0:
                 self.direction = self.direction.normalize()
-            self.rect.center = self.rect.center + self.direction * self.speed
+
+            self.position.x += self.direction.x * self.speed
+            self.rect.centerx = self.position.x
+
+            self.position.y += self.direction.y * self.speed
+            self.rect.centery = self.position.y
 
     def animate(self):
         if self.status in self.animations:
@@ -86,7 +93,7 @@ class Player(pygame.sprite.Sprite):
             if self.frame_index >= len(animation):
                 self.frame_index = 0
             self.image = animation[int(self.frame_index)]
-            self.rect = self.image.get_rect(center=self.rect.center)
+            self.rect = self.image.get_rect(center=self.position)
 
     def update(self):
         self.input()
