@@ -2,15 +2,15 @@ import pygame
 
 from os import path
 
-from utils import import_folder
+from settings import LAYERS
 from timer import Timer
+from utils import import_folder
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, position, groups: list):
-        super().__init__()
-        for group in groups:
-            group.add(self)
+    def __init__(self, position, groups):
+        super().__init__(groups)
+        self.sorting_layer = LAYERS['main']
         self.animations = {}
         self.import_animations()
         self.status = 'down_idle'
