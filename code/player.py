@@ -1,7 +1,6 @@
-from os import path
-from random import choice
-
 import pygame
+
+from os import path
 
 from utils import import_folder
 from timer import Timer

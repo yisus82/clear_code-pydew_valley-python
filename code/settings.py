@@ -1,2 +1,10 @@
 FPS = 60
 TILESIZE = 64
+OVERLAY_OFFSETS = {
+    'tool': (50, -100),
+    'seed': (150, -100),
+}
+ITEM_BOX_SIZE = 80
+ITEM_BOX_BORDER_WIDTH = 5
+UI_BG_COLOR = 'white'
+UI_BORDER_COLOR = 'gold'
