@@ -22,11 +22,15 @@ class Player(pygame.sprite.Sprite):
         self.direction = pygame.math.Vector2()
         self.position = pygame.math.Vector2(self.rect.center)
         self.tools = ['axe', 'hoe', 'water']
-        self.selected_tool = None
+        self.tool_index = 0
+        self.selected_tool = self.tools[self.tool_index]
         self.seeds = ['corn', 'tomato']
-        self.selected_seed = None
+        self.seed_index = 0
+        self.selected_seed = self.seeds[self.seed_index]
         self.timers = {
+            'select_tool': Timer(200),
             'use_tool': Timer(500, self.use_tool),
+            'select_seed': Timer(200),
             'plant_seed': Timer(500, self.plant_seed),
         }
 
@@ -65,12 +69,12 @@ class Player(pygame.sprite.Sprite):
     def input(self):
         keys = pygame.key.get_pressed()
         if not self.timers['use_tool'].active and not self.timers['plant_seed'].active:
-            if keys[pygame.K_j] and self.selected_tool is not None:
+            if keys[pygame.K_j]:
                 self.frame_index = 0
                 self.direction.x = 0
                 self.direction.y = 0
                 self.timers['use_tool'].activate()
-            elif keys[pygame.K_k] and self.selected_seed is not None:
+            elif keys[pygame.K_k]:
                 self.frame_index = 0
                 self.direction.x = 0
                 self.direction.y = 0
@@ -88,20 +92,14 @@ class Player(pygame.sprite.Sprite):
                     self.direction.x = -1
                 else:
                     self.direction.x = 0
-                if keys[pygame.K_1]:
-                    self.selected_tool = self.tools[0]
-                elif keys[pygame.K_2]:
-                    self.selected_tool = self.tools[1]
-                elif keys[pygame.K_3]:
-                    self.selected_tool = self.tools[2]
-                elif keys[pygame.K_4]:
-                    self.selected_tool = None
-                if keys[pygame.K_6]:
-                    self.selected_seed = self.seeds[0]
-                elif keys[pygame.K_7]:
-                    self.selected_seed = self.seeds[1]
-                elif keys[pygame.K_8]:
-                    self.selected_seed = None
+                if keys[pygame.K_q] and not self.timers['select_tool'].active:
+                    self.timers['select_tool'].activate()
+                    self.tool_index = (self.tool_index + 1) % len(self.tools)
+                    self.selected_tool = self.tools[self.tool_index]
+                if keys[pygame.K_e] and not self.timers['select_seed'].active:
+                    self.timers['select_seed'].activate()
+                    self.seed_index = (self.seed_index + 1) % len(self.seeds)
+                    self.selected_seed = self.seeds[self.seed_index]
 
     def update_status(self):
         if self.direction.x == 0 and self.direction.y == 0:
