@@ -24,8 +24,11 @@ class Player(pygame.sprite.Sprite):
         self.position = pygame.math.Vector2(self.rect.center)
         self.tools = ['axe', 'hoe', 'water']
         self.selected_tool = None
+        self.seeds = ['corn', 'tomato']
+        self.selected_seed = None
         self.timers = {
             'use_tool': Timer(500, self.use_tool),
+            'plant_seed': Timer(500, self.plant_seed),
         }
 
     def import_animations(self):
@@ -62,12 +65,17 @@ class Player(pygame.sprite.Sprite):
 
     def input(self):
         keys = pygame.key.get_pressed()
-        if not self.timers['use_tool'].active:
-            if keys[pygame.K_SPACE] and self.selected_tool is not None:
+        if not self.timers['use_tool'].active and not self.timers['plant_seed'].active:
+            if keys[pygame.K_j] and self.selected_tool is not None:
                 self.frame_index = 0
                 self.direction.x = 0
                 self.direction.y = 0
                 self.timers['use_tool'].activate()
+            elif keys[pygame.K_k] and self.selected_seed is not None:
+                self.frame_index = 0
+                self.direction.x = 0
+                self.direction.y = 0
+                self.timers['plant_seed'].activate()
             else:
                 if keys[pygame.K_UP] or keys[pygame.K_w]:
                     self.direction.y = -1
@@ -87,8 +95,14 @@ class Player(pygame.sprite.Sprite):
                     self.selected_tool = self.tools[1]
                 elif keys[pygame.K_3]:
                     self.selected_tool = self.tools[2]
-                elif keys[pygame.K_0]:
+                elif keys[pygame.K_4]:
                     self.selected_tool = None
+                if keys[pygame.K_6]:
+                    self.selected_seed = self.seeds[0]
+                elif keys[pygame.K_7]:
+                    self.selected_seed = self.seeds[1]
+                elif keys[pygame.K_8]:
+                    self.selected_seed = None
 
     def update_status(self):
         if self.direction.x == 0 and self.direction.y == 0:
@@ -117,6 +131,9 @@ class Player(pygame.sprite.Sprite):
 
     def use_tool(self):
         print(self.selected_tool, 'used')
+
+    def plant_seed(self):
+        print(self.selected_seed, 'planted')
 
     def animate(self):
         if self.status in self.animations:
