@@ -13,9 +13,10 @@ from utils import import_folder
 
 class Level:
     def __init__(self):
+        self.player = None
         self.display_surface = pygame.display.get_surface()
         self.all_sprites = CameraGroup()
-        self.player = Player((25 * TILESIZE, 25 * TILESIZE), [self.all_sprites])
+        self.collision_sprites = pygame.sprite.Group()
         self.load_map()
         self.overlay = Overlay(self.player)
 
@@ -34,7 +35,7 @@ class Level:
 
         # fence
         for x, y, surface in tmx_data.get_layer_by_name("Fence").tiles():
-            Generic((x * TILESIZE, y * TILESIZE), surface, [self.all_sprites])
+            Generic((x * TILESIZE, y * TILESIZE), surface, [self.all_sprites, self.collision_sprites])
 
         # water
         water_path = path.join("..", "graphics", "water")
@@ -44,11 +45,20 @@ class Level:
 
         # trees
         for obj in tmx_data.get_layer_by_name("Trees"):
-            Tree((obj.x, obj.y), obj.image, [self.all_sprites], obj.name)
+            Tree((obj.x, obj.y), obj.image, [self.all_sprites, self.collision_sprites], obj.name)
 
         # wild flowers
         for obj in tmx_data.get_layer_by_name("Decoration"):
-            WildFlower((obj.x, obj.y), obj.image, [self.all_sprites])
+            WildFlower((obj.x, obj.y), obj.image, [self.all_sprites, self.collision_sprites])
+
+        # collision tiles
+        for x, y, surface in tmx_data.get_layer_by_name('Collision').tiles():
+            Generic((x * TILESIZE, y * TILESIZE), surface, [self.collision_sprites])
+
+        # player
+        for obj in tmx_data.get_layer_by_name('Player'):
+            if obj.name == 'Start':
+                self.player = Player((obj.x, obj.y), [self.all_sprites], self.collision_sprites)
 
         # ground
         ground_path = path.join("..", "graphics", "world", "ground.png")

@@ -9,13 +9,16 @@ class Generic(pygame.sprite.Sprite):
         self.position = position
         self.image = surface
         self.rect = self.image.get_rect(topleft=position)
+        self.hitbox = self.rect.inflate(-self.rect.width * 0.2, -self.rect.height * 0.75)
         self.sorting_layer = sorting_layer
+        self.sprite_type = "generic"
 
 
 class Tree(Generic):
     def __init__(self, position, surface, groups, name):
         super().__init__(position, surface, groups)
         self.name = name
+        self.sprite_type = "tree"
 
 
 class Water(Generic):
@@ -26,6 +29,7 @@ class Water(Generic):
         self.animation_speed = 0.05
         self.image = self.frames[self.frame_index]
         self.rect = self.image.get_rect(center=position)
+        self.sprite_type = "water"
 
     def animate(self):
         self.frame_index += self.animation_speed
@@ -41,3 +45,5 @@ class Water(Generic):
 class WildFlower(Generic):
     def __init__(self, position, surface, groups):
         super().__init__(position, surface, groups)
+        self.hitbox = self.rect.inflate(-20, -self.rect.height * 0.9)
+        self.sprite_type = "wild flower"

@@ -8,55 +8,56 @@ from utils import import_folder
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, position, groups):
+    def __init__(self, position, groups, collision_sprites):
         super().__init__(groups)
-        self.sorting_layer = LAYERS['main']
+        self.collision_sprites = collision_sprites
+        self.sorting_layer = LAYERS["main"]
         self.animations = {}
         self.import_animations()
-        self.status = 'down_idle'
+        self.status = "down_idle"
         self.frame_index = 0
         self.animation_speed = 0.05
         self.image = self.animations[self.status][self.frame_index]
         self.rect = self.image.get_rect(center=position)
+        self.hitbox = self.rect.inflate(-125, -70)
         self.speed = 5.0
         self.direction = pygame.math.Vector2()
-        self.position = pygame.math.Vector2(self.rect.center)
-        self.tools = ['axe', 'hoe', 'water']
+        self.tools = ["axe", "hoe", "water"]
         self.tool_index = 0
         self.selected_tool = self.tools[self.tool_index]
-        self.seeds = ['corn', 'tomato']
+        self.seeds = ["corn", "tomato"]
         self.seed_index = 0
         self.selected_seed = self.seeds[self.seed_index]
         self.timers = {
-            'select_tool': Timer(200),
-            'use_tool': Timer(500, self.use_tool),
-            'select_seed': Timer(200),
-            'plant_seed': Timer(500, self.plant_seed),
+            "select_tool": Timer(200),
+            "use_tool": Timer(500, self.use_tool),
+            "select_seed": Timer(200),
+            "plant_seed": Timer(500, self.plant_seed),
         }
 
     def import_animations(self):
-        player_folder = path.join('..', 'graphics', 'player')
+        player_folder = path.join("..", "graphics", "player")
         self.animations = {
-            'down': [],
-            'down_axe': [],
-            'down_hoe': [],
-            'down_idle': [],
-            'down_water': [],
-            'left': [],
-            'left_axe': [],
-            'left_hoe': [],
-            'left_idle': [],
-            'left_water': [],
-            'right': [],
-            'right_axe': [],
-            'right_hoe': [],
-            'right_idle': [],
-            'right_water': [],
-            'up': [],
-            'up_axe': [],
-            'up_hoe': [],
-            'up_idle': [],
-            'up_water': [],
+            "down": [],
+            "down_axe": [],
+            "down_hoe": [],
+            "down_idle": [],
+            "down_water": [],
+            "left": [],
+            "left_axe": [],
+            "left_hoe": [],
+            "left_idle": [],
+            "left_water": [],
+            "right": [],
+            "right_axe": [],
+            "right_hoe": [],
+            "right_idle": [],
+            "right_water": [],
+            "up": [],
+            "up_axe": [],
+            "up_hoe": [],
+            "up_idle": [],
+            "up_water": [],
         }
         for animation_name in self.animations.keys():
             animation_folder = path.join(player_folder, animation_name)
@@ -68,17 +69,17 @@ class Player(pygame.sprite.Sprite):
 
     def input(self):
         keys = pygame.key.get_pressed()
-        if not self.timers['use_tool'].active and not self.timers['plant_seed'].active:
+        if not self.timers["use_tool"].active and not self.timers["plant_seed"].active:
             if keys[pygame.K_j]:
                 self.frame_index = 0
                 self.direction.x = 0
                 self.direction.y = 0
-                self.timers['use_tool'].activate()
+                self.timers["use_tool"].activate()
             elif keys[pygame.K_k]:
                 self.frame_index = 0
                 self.direction.x = 0
                 self.direction.y = 0
-                self.timers['plant_seed'].activate()
+                self.timers["plant_seed"].activate()
             else:
                 if keys[pygame.K_UP] or keys[pygame.K_w]:
                     self.direction.y = -1
@@ -92,45 +93,61 @@ class Player(pygame.sprite.Sprite):
                     self.direction.x = -1
                 else:
                     self.direction.x = 0
-                if keys[pygame.K_q] and not self.timers['select_tool'].active:
-                    self.timers['select_tool'].activate()
+                if keys[pygame.K_q] and not self.timers["select_tool"].active:
+                    self.timers["select_tool"].activate()
                     self.tool_index = (self.tool_index + 1) % len(self.tools)
                     self.selected_tool = self.tools[self.tool_index]
-                if keys[pygame.K_e] and not self.timers['select_seed'].active:
-                    self.timers['select_seed'].activate()
+                if keys[pygame.K_e] and not self.timers["select_seed"].active:
+                    self.timers["select_seed"].activate()
                     self.seed_index = (self.seed_index + 1) % len(self.seeds)
                     self.selected_seed = self.seeds[self.seed_index]
 
     def update_status(self):
         if self.direction.x == 0 and self.direction.y == 0:
-            self.status = self.status.split('_')[0] + '_idle'
+            self.status = self.status.split("_")[0] + "_idle"
         elif self.direction.x == 1 and self.direction.y == 0:
-            self.status = 'right'
+            self.status = "right"
         elif self.direction.x == -1 and self.direction.y == 0:
-            self.status = 'left'
+            self.status = "left"
         elif self.direction.y > 0:
-            self.status = 'down'
+            self.status = "down"
         elif self.direction.y < 0:
-            self.status = 'up'
-        if self.selected_tool is not None and self.timers['use_tool'].active:
-            self.status = self.status.split('_')[0] + '_' + self.selected_tool
+            self.status = "up"
+        if self.selected_tool is not None and self.timers["use_tool"].active:
+            self.status = self.status.split("_")[0] + "_" + self.selected_tool
+
+    def collide(self, direction):
+        if self.rect is not None:
+            if direction == "horizontal":
+                for sprite in self.collision_sprites:
+                    if sprite.hitbox.colliderect(self.hitbox):
+                        if self.direction.x > 0:  # moving right
+                            self.hitbox.right = sprite.hitbox.left
+                        elif self.direction.x < 0:  # moving left
+                            self.hitbox.left = sprite.hitbox.right
+            elif direction == "vertical":
+                for sprite in self.collision_sprites:
+                    if sprite.hitbox.colliderect(self.hitbox):
+                        if self.direction.y > 0:  # moving down
+                            self.hitbox.bottom = sprite.hitbox.top
+                        elif self.direction.y < 0:  # moving up
+                            self.hitbox.top = sprite.hitbox.bottom
 
     def move(self):
         if self.rect is not None:
             if self.direction.magnitude() != 0:
                 self.direction = self.direction.normalize()
-
-            self.position.x += self.direction.x * self.speed
-            self.rect.centerx = self.position.x
-
-            self.position.y += self.direction.y * self.speed
-            self.rect.centery = self.position.y
+            self.hitbox.move_ip(self.direction.x * self.speed, 0)
+            self.collide("horizontal")
+            self.hitbox.move_ip(0, self.direction.y * self.speed)
+            self.collide("vertical")
+            self.rect.center = self.hitbox.center
 
     def use_tool(self):
-        print(self.selected_tool, 'used')
+        print(self.selected_tool, "used")
 
     def plant_seed(self):
-        print(self.selected_seed, 'planted')
+        print(self.selected_seed, "planted")
 
     def animate(self):
         if self.status in self.animations:
@@ -139,7 +156,7 @@ class Player(pygame.sprite.Sprite):
             if self.frame_index >= len(animation):
                 self.frame_index = 0
             self.image = animation[int(self.frame_index)]
-            self.rect = self.image.get_rect(center=self.position)
+            self.rect = self.image.get_rect(center=self.hitbox.center)
 
     def update(self):
         self.update_timers()
