@@ -17,6 +17,7 @@ class Level:
         self.display_surface = pygame.display.get_surface()
         self.all_sprites = CameraGroup()
         self.collision_sprites = pygame.sprite.Group()
+        self.tree_sprites = pygame.sprite.Group()
         self.load_map()
         self.overlay = Overlay(self.player)
 
@@ -45,7 +46,8 @@ class Level:
 
         # trees
         for obj in tmx_data.get_layer_by_name("Trees"):
-            Tree((obj.x, obj.y), obj.image, [self.all_sprites, self.collision_sprites], obj.name)
+            Tree((obj.x, obj.y), obj.image, [self.all_sprites, self.collision_sprites, self.tree_sprites],
+                 obj.name.lower())
 
         # wild flowers
         for obj in tmx_data.get_layer_by_name("Decoration"):
@@ -58,7 +60,8 @@ class Level:
         # player
         for obj in tmx_data.get_layer_by_name('Player'):
             if obj.name == 'Start':
-                self.player = Player((obj.x, obj.y), [self.all_sprites], self.collision_sprites)
+                self.player = Player((obj.x, obj.y), [self.all_sprites], self.collision_sprites,
+                                     self.tree_sprites)
 
         # ground
         ground_path = path.join("..", "graphics", "world", "ground.png")

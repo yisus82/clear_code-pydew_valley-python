@@ -2,15 +2,16 @@ import pygame
 
 from os import path
 
-from settings import LAYERS
+from settings import LAYERS, PLAYER_TOOL_OFFSET
 from timer import Timer
 from utils import import_folder
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, position, groups, collision_sprites):
+    def __init__(self, position, groups, collision_sprites, tree_sprites):
         super().__init__(groups)
         self.collision_sprites = collision_sprites
+        self.tree_sprites = tree_sprites
         self.sorting_layer = LAYERS["main"]
         self.animations = {}
         self.import_animations()
@@ -25,6 +26,7 @@ class Player(pygame.sprite.Sprite):
         self.tools = ["axe", "hoe", "water"]
         self.tool_index = 0
         self.selected_tool = self.tools[self.tool_index]
+        self.target_position = self.rect.center + PLAYER_TOOL_OFFSET[self.status.split('_')[0]]
         self.seeds = ["corn", "tomato"]
         self.seed_index = 0
         self.selected_seed = self.seeds[self.seed_index]
@@ -143,8 +145,18 @@ class Player(pygame.sprite.Sprite):
             self.collide("vertical")
             self.rect.center = self.hitbox.center
 
+    def update_target_position(self):
+        self.target_position = self.rect.center + PLAYER_TOOL_OFFSET[self.status.split('_')[0]]
+
     def use_tool(self):
-        print(self.selected_tool, "used")
+        if self.selected_tool == "axe":
+            for tree in self.tree_sprites.sprites():
+                if tree.rect.collidepoint(self.target_position):
+                    tree.take_damage()
+        elif self.selected_tool == "hoe":
+            pass
+        elif self.selected_tool == "water":
+            pass
 
     def plant_seed(self):
         print(self.selected_seed, "planted")
@@ -163,6 +175,7 @@ class Player(pygame.sprite.Sprite):
         self.input()
         self.update_status()
         self.move()
+        self.update_target_position()
         self.animate()
 
     def draw(self, display_surface):

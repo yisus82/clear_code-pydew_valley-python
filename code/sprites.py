@@ -1,6 +1,10 @@
 import pygame
 
-from settings import TILESIZE, LAYERS
+from os import path
+from random import choice, randint
+
+from timer import Timer
+from settings import FRUIT_POSITIONS, TILESIZE, LAYERS
 
 
 class Generic(pygame.sprite.Sprite):
@@ -15,10 +19,49 @@ class Generic(pygame.sprite.Sprite):
 
 
 class Tree(Generic):
-    def __init__(self, position, surface, groups, name):
+    def __init__(self, position, surface, groups, size="small"):
         super().__init__(position, surface, groups)
-        self.name = name
+        self.size = size
         self.sprite_type = "tree"
+        self.health = 5
+        self.alive = True
+        stump_path = path.join("..", "graphics", "stumps", f"{self.size}.png")
+        self.stump_surface = pygame.image.load(stump_path).convert_alpha()
+        self.death_timer = Timer(200)
+
+        # fruits
+        fruit_path = path.join("..", "graphics", "fruits", "apple.png")
+        self.fruit_surface = pygame.image.load(fruit_path).convert_alpha()
+        self.fruit_positions = FRUIT_POSITIONS[self.size]
+        self.fruit_sprites = pygame.sprite.Group()
+        self.create_fruits()
+
+    def take_damage(self, damage=1):
+        self.health -= damage
+
+        # remove a fruit
+        if len(self.fruit_sprites.sprites()) > 0:
+            random_fruit = choice(self.fruit_sprites.sprites())
+            random_fruit.kill()
+
+    def check_death(self):
+        if self.health <= 0:
+            self.image = self.stump_surface
+            self.rect = self.image.get_rect(midbottom=self.rect.midbottom)
+            self.hitbox = self.rect.copy().inflate(-10, -self.rect.height * 0.6)
+            self.alive = False
+
+    def create_fruits(self):
+        for position in self.fruit_positions:
+            if randint(0, 10) < 2:
+                x = position[0] + self.rect.left
+                y = position[1] + self.rect.top
+                Generic((x, y), self.fruit_surface, [self.fruit_sprites, self.groups()[0]],
+                        LAYERS['fruit'])
+
+    def update(self):
+        if self.alive:
+            self.check_death()
 
 
 class Water(Generic):
