@@ -8,10 +8,11 @@ from utils import import_folder
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, position, groups, collision_sprites, tree_sprites):
+    def __init__(self, position, groups, collision_sprites, tree_sprites, interaction_sprites):
         super().__init__(groups)
         self.collision_sprites = collision_sprites
         self.tree_sprites = tree_sprites
+        self.interaction_sprites = interaction_sprites
         self.sorting_layer = LAYERS["main"]
         self.animations = {}
         self.import_animations()
@@ -30,6 +31,7 @@ class Player(pygame.sprite.Sprite):
         self.seeds = ["corn", "tomato"]
         self.seed_index = 0
         self.selected_seed = self.seeds[self.seed_index]
+        self.sleeping = False
         self.item_inventory = {
             "wood": 0,
             "apple": 0,
@@ -76,6 +78,12 @@ class Player(pygame.sprite.Sprite):
             timer.update()
 
     def input(self):
+        if self.sleeping:
+            self.frame_index = 0
+            self.direction.x = 0
+            self.direction.y = 0
+            self.status = "down_idle"
+            return
         keys = pygame.key.get_pressed()
         if not self.timers["use_tool"].active and not self.timers["plant_seed"].active:
             if keys[pygame.K_j]:
@@ -109,6 +117,13 @@ class Player(pygame.sprite.Sprite):
                     self.timers["select_seed"].activate()
                     self.seed_index = (self.seed_index + 1) % len(self.seeds)
                     self.selected_seed = self.seeds[self.seed_index]
+                if keys[pygame.K_RETURN]:
+                    collided_interactive = pygame.sprite.spritecollideany(self, self.interaction_sprites)
+                    if collided_interactive is not None:
+                        if collided_interactive.name == "Bed":
+                            self.hitbox.center = collided_interactive.rect.center
+                            self.rect.center = self.hitbox.center
+                            self.sleeping = True
 
     def update_status(self):
         if self.direction.x == 0 and self.direction.y == 0:

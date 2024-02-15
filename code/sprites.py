@@ -17,6 +17,12 @@ class Generic(pygame.sprite.Sprite):
         self.sprite_type = "generic"
 
 
+class Interactive(Generic):
+    def __init__(self, pos, size, groups, name):
+        super().__init__(pos, pygame.Surface(size), groups)
+        self.name = name
+
+
 class Particle(Generic):
     def __init__(self, position, surface, groups, sorting_layer, duration=200):
         super().__init__(position, surface, groups, sorting_layer)
@@ -73,11 +79,10 @@ class Tree(Generic):
 
     def create_fruits(self):
         for position in self.fruit_positions:
-            if randint(0, 10) < 5:
-                x = position[0] + self.rect.left
-                y = position[1] + self.rect.top
-                Generic((x, y), self.fruit_surface, [self.fruit_sprites, self.groups()[0]],
-                        LAYERS['fruit'])
+            x = position[0] + self.rect.left
+            y = position[1] + self.rect.top
+            Generic((x, y), self.fruit_surface, [self.fruit_sprites, self.groups()[0]],
+                    LAYERS['fruit'])
 
     def update(self):
         if self.alive:

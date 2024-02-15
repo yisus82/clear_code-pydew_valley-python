@@ -6,8 +6,9 @@ from os import path
 from camera_group import CameraGroup
 from overlay import Overlay
 from player import Player
-from sprites import Generic, Tree, Water, WildFlower
+from sprites import Generic, Interactive, Tree, Water, WildFlower
 from settings import LAYERS, TILESIZE
+from transition import Transition
 from utils import import_folder
 
 
@@ -18,8 +19,10 @@ class Level:
         self.all_sprites = CameraGroup()
         self.collision_sprites = pygame.sprite.Group()
         self.tree_sprites = pygame.sprite.Group()
+        self.interaction_sprites = pygame.sprite.Group()
         self.load_map()
         self.overlay = Overlay(self.player)
+        self.transition = Transition(self.reset, self.player)
 
     def load_map(self):
         map_path = path.join("..", "map", "map.tmx")
@@ -61,7 +64,10 @@ class Level:
         for obj in tmx_data.get_layer_by_name('Player'):
             if obj.name == 'Start':
                 self.player = Player((obj.x, obj.y), [self.all_sprites], self.collision_sprites,
-                                     self.tree_sprites)
+                                     self.tree_sprites, self.interaction_sprites)
+            if obj.name == 'Bed':
+                Interactive((obj.x, obj.y), (obj.width, obj.height), [self.interaction_sprites],
+                            obj.name)
 
         # ground
         ground_path = path.join("..", "graphics", "world", "ground.png")
@@ -73,7 +79,18 @@ class Level:
         self.all_sprites.update()
         self.all_sprites.custom_draw(self.player)
         self.overlay.display()
+        if self.player.sleeping:
+            self.transition.play()
 
     def player_add(self, item, amount=1):
         self.player.item_inventory[item] += amount
         print(self.player.item_inventory)
+
+    def reset(self):
+        # fruits on trees
+        for tree in self.tree_sprites:
+            if tree.alive:
+                tree.health = 5
+                for fruit in tree.fruit_sprites:
+                    fruit.kill()
+                tree.create_fruits()
