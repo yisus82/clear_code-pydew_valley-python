@@ -3,7 +3,6 @@ import pygame
 from os import path
 from random import choice, randint
 
-from timer import Timer
 from settings import FRUIT_POSITIONS, TILESIZE, LAYERS
 
 
@@ -18,6 +17,23 @@ class Generic(pygame.sprite.Sprite):
         self.sprite_type = "generic"
 
 
+class Particle(Generic):
+    def __init__(self, position, surface, groups, sorting_layer, duration=200):
+        super().__init__(position, surface, groups, sorting_layer)
+        self.sprite_type = "particle"
+        mask_surface = pygame.mask.from_surface(self.image)
+        new_surface = mask_surface.to_surface()
+        new_surface.set_colorkey((0, 0, 0))
+        self.image = new_surface
+        self.start_time = pygame.time.get_ticks()
+        self.duration = duration
+
+    def update(self):
+        current_time = pygame.time.get_ticks()
+        if current_time - self.start_time > self.duration:
+            self.kill()
+
+
 class Tree(Generic):
     def __init__(self, position, surface, groups, size="small"):
         super().__init__(position, surface, groups)
@@ -27,7 +43,6 @@ class Tree(Generic):
         self.alive = True
         stump_path = path.join("..", "graphics", "stumps", f"{self.size}.png")
         self.stump_surface = pygame.image.load(stump_path).convert_alpha()
-        self.death_timer = Timer(200)
 
         # fruits
         fruit_path = path.join("..", "graphics", "fruits", "apple.png")
@@ -42,10 +57,12 @@ class Tree(Generic):
         # remove a fruit
         if len(self.fruit_sprites.sprites()) > 0:
             random_fruit = choice(self.fruit_sprites.sprites())
+            Particle(random_fruit.rect.topleft, random_fruit.image, [self.groups()[0]], LAYERS['fruit'])
             random_fruit.kill()
 
     def check_death(self):
         if self.health <= 0:
+            Particle(self.rect.topleft, self.image, [self.groups()[0]], LAYERS['fruit'], 300)
             self.image = self.stump_surface
             self.rect = self.image.get_rect(midbottom=self.rect.midbottom)
             self.hitbox = self.rect.copy().inflate(-10, -self.rect.height * 0.6)
@@ -53,7 +70,7 @@ class Tree(Generic):
 
     def create_fruits(self):
         for position in self.fruit_positions:
-            if randint(0, 10) < 2:
+            if randint(0, 10) < 5:
                 x = position[0] + self.rect.left
                 y = position[1] + self.rect.top
                 Generic((x, y), self.fruit_surface, [self.fruit_sprites, self.groups()[0]],
