@@ -47,7 +47,7 @@ class Level:
         # trees
         for obj in tmx_data.get_layer_by_name("Trees"):
             Tree((obj.x, obj.y), obj.image, [self.all_sprites, self.collision_sprites, self.tree_sprites],
-                 obj.name.lower())
+                 obj.name.lower(), self.player_add)
 
         # wild flowers
         for obj in tmx_data.get_layer_by_name("Decoration"):
@@ -73,3 +73,7 @@ class Level:
         self.all_sprites.update()
         self.all_sprites.custom_draw(self.player)
         self.overlay.display()
+
+    def player_add(self, item, amount=1):
+        self.player.item_inventory[item] += amount
+        print(self.player.item_inventory)

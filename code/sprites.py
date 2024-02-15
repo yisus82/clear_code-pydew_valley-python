@@ -35,9 +35,10 @@ class Particle(Generic):
 
 
 class Tree(Generic):
-    def __init__(self, position, surface, groups, size="small"):
+    def __init__(self, position, surface, groups, size, player_add):
         super().__init__(position, surface, groups)
         self.size = size
+        self.player_add = player_add
         self.sprite_type = "tree"
         self.health = 5
         self.alive = True
@@ -58,6 +59,7 @@ class Tree(Generic):
         if len(self.fruit_sprites.sprites()) > 0:
             random_fruit = choice(self.fruit_sprites.sprites())
             Particle(random_fruit.rect.topleft, random_fruit.image, [self.groups()[0]], LAYERS['fruit'])
+            self.player_add("apple")
             random_fruit.kill()
 
     def check_death(self):
@@ -66,6 +68,7 @@ class Tree(Generic):
             self.image = self.stump_surface
             self.rect = self.image.get_rect(midbottom=self.rect.midbottom)
             self.hitbox = self.rect.copy().inflate(-10, -self.rect.height * 0.6)
+            self.player_add("wood")
             self.alive = False
 
     def create_fruits(self):
