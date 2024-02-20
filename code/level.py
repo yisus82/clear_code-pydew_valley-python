@@ -6,6 +6,7 @@ from os import path
 from camera_group import CameraGroup
 from overlay import Overlay
 from player import Player
+from soil import SoilLayer
 from sprites import Generic, Interactive, Tree, Water, WildFlower
 from settings import LAYERS, TILESIZE
 from transition import Transition
@@ -20,6 +21,7 @@ class Level:
         self.collision_sprites = pygame.sprite.Group()
         self.tree_sprites = pygame.sprite.Group()
         self.interaction_sprites = pygame.sprite.Group()
+        self.soil_layer = SoilLayer(self.all_sprites)
         self.load_map()
         self.overlay = Overlay(self.player)
         self.transition = Transition(self.reset, self.player)
@@ -64,7 +66,7 @@ class Level:
         for obj in tmx_data.get_layer_by_name('Player'):
             if obj.name == 'Start':
                 self.player = Player((obj.x, obj.y), [self.all_sprites], self.collision_sprites,
-                                     self.tree_sprites, self.interaction_sprites)
+                                     self.tree_sprites, self.interaction_sprites, self.soil_layer)
             if obj.name == 'Bed':
                 Interactive((obj.x, obj.y), (obj.width, obj.height), [self.interaction_sprites],
                             obj.name)

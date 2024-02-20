@@ -8,11 +8,12 @@ from utils import import_folder
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, position, groups, collision_sprites, tree_sprites, interaction_sprites):
+    def __init__(self, position, groups, collision_sprites, tree_sprites, interaction_sprites, soil_layer):
         super().__init__(groups)
         self.collision_sprites = collision_sprites
         self.tree_sprites = tree_sprites
         self.interaction_sprites = interaction_sprites
+        self.soil_layer = soil_layer
         self.sorting_layer = LAYERS["main"]
         self.animations = {}
         self.import_animations()
@@ -175,7 +176,7 @@ class Player(pygame.sprite.Sprite):
                 if tree.rect.collidepoint(self.target_position):
                     tree.take_damage()
         elif self.selected_tool == "hoe":
-            pass
+            self.soil_layer.get_hit(self.target_position)
         elif self.selected_tool == "water":
             pass
 
