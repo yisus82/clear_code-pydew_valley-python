@@ -96,3 +96,6 @@ class Level:
                 for fruit in tree.fruit_sprites:
                     fruit.kill()
                 tree.create_fruits()
+
+        # soil
+        self.soil_layer.remove_water()

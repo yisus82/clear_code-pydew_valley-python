@@ -178,7 +178,7 @@ class Player(pygame.sprite.Sprite):
         elif self.selected_tool == "hoe":
             self.soil_layer.get_hit(self.target_position)
         elif self.selected_tool == "water":
-            pass
+            self.soil_layer.water(self.target_position)
 
     def plant_seed(self):
         print(self.selected_seed, "planted")

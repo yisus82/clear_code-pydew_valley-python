@@ -2,9 +2,10 @@ import pygame
 
 from os import path
 from pytmx.util_pygame import load_pygame
+from random import choice
 
 from settings import LAYERS, TILESIZE
-from utils import import_folder_as_dict
+from utils import import_folder, import_folder_as_dict
 
 
 class SoilTile(pygame.sprite.Sprite):
@@ -16,11 +17,12 @@ class SoilTile(pygame.sprite.Sprite):
 
 
 class SoilCell:
-    def __init__(self, x, y, farmable=False, has_patch=False):
+    def __init__(self, x, y, farmable=False, has_patch=False, has_water=False):
         self.x = x
         self.y = y
         self.farmable = farmable
         self.has_patch = has_patch
+        self.has_water = has_water
 
     def __repr__(self):
         attributes = []
@@ -28,6 +30,8 @@ class SoilCell:
             attributes.append("F")
         if self.has_patch:
             attributes.append("X")
+        if self.has_water:
+            attributes.append("W")
         return attributes.__repr__()
 
 
@@ -35,8 +39,11 @@ class SoilLayer:
     def __init__(self, all_sprites):
         self.all_sprites = all_sprites
         self.soil_sprites = pygame.sprite.Group()
+        self.water_sprites = pygame.sprite.Group()
         soil_path = path.join("..", "graphics", "soil")
         self.soil_surfaces = import_folder_as_dict(soil_path)
+        soil_water_path = path.join("..", "graphics", "soil_water")
+        self.water_surfaces = import_folder(soil_water_path)
         self.grid = []
         self.create_grid()
         self.hit_rects = []
@@ -69,6 +76,28 @@ class SoilLayer:
                 if self.grid[y][x].farmable and not self.grid[y][x].has_patch:
                     self.grid[y][x].has_patch = True
                     self.create_soil_tiles()
+
+    def water(self, target_pos):
+        for soil_sprite in self.soil_sprites.sprites():
+            if soil_sprite.rect.collidepoint(target_pos):
+                x = soil_sprite.rect.x // TILESIZE
+                y = soil_sprite.rect.y // TILESIZE
+                if not self.grid[y][x].has_water:
+                    self.grid[y][x].has_water = True
+                    position = soil_sprite.rect.topleft
+                    surface = choice(self.water_surfaces)
+                    WaterTile(position, surface, [self.all_sprites, self.water_sprites])
+
+    def remove_water(self):
+        # destroy all water sprites
+        for sprite in self.water_sprites.sprites():
+            sprite.kill()
+
+        # clean up the grid
+        for row in self.grid:
+            for cell in row:
+                if cell.has_water:
+                    cell.has_water = False
 
     def create_soil_tiles(self):
         self.soil_sprites.empty()
@@ -126,3 +155,11 @@ class SoilLayer:
 
                     SoilTile((index_col * TILESIZE, index_row * TILESIZE), self.soil_surfaces[tile_type],
                              [self.all_sprites, self.soil_sprites])
+
+
+class WaterTile(pygame.sprite.Sprite):
+    def __init__(self, position, surface, groups):
+        super().__init__(groups)
+        self.image = surface
+        self.rect = self.image.get_rect(topleft=position)
+        self.sorting_layer = LAYERS['soil water']
