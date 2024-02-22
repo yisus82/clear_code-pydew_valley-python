@@ -28,7 +28,7 @@ class Player(pygame.sprite.Sprite):
         self.tools = ["axe", "hoe", "water"]
         self.tool_index = 0
         self.selected_tool = self.tools[self.tool_index]
-        self.target_position = self.rect.center + PLAYER_TOOL_OFFSET[self.status.split('_')[0]]
+        self.target_position = self.rect.center + PLAYER_TOOL_OFFSET[self.status.split("_")[0]]
         self.seeds = ["corn", "tomato"]
         self.seed_index = 0
         self.selected_seed = self.seeds[self.seed_index]
@@ -168,7 +168,7 @@ class Player(pygame.sprite.Sprite):
             self.rect.center = self.hitbox.center
 
     def update_target_position(self):
-        self.target_position = self.rect.center + PLAYER_TOOL_OFFSET[self.status.split('_')[0]]
+        self.target_position = self.rect.center + PLAYER_TOOL_OFFSET[self.status.split("_")[0]]
 
     def use_tool(self):
         if self.selected_tool == "axe":

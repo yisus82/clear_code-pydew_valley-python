@@ -15,17 +15,17 @@ class Overlay:
         self.import_seeds()
 
     def import_tools(self):
-        overlay_path = path.join('..', 'graphics', 'overlay')
-        tools_path = path.join(overlay_path, 'tools')
+        overlay_path = path.join("..", "graphics", "overlay")
+        tools_path = path.join(overlay_path, "tools")
         for tool in self.player.tools:
-            tool_surface = pygame.image.load(path.join(tools_path, f'{tool}.png')).convert_alpha()
+            tool_surface = pygame.image.load(path.join(tools_path, f"{tool}.png")).convert_alpha()
             self.tools[tool] = tool_surface
 
     def import_seeds(self):
-        overlay_path = path.join('..', 'graphics', 'overlay')
-        seeds_path = path.join(overlay_path, 'seeds')
+        overlay_path = path.join("..", "graphics", "overlay")
+        seeds_path = path.join(overlay_path, "seeds")
         for seed in self.player.seeds:
-            seed_surface = pygame.image.load(path.join(seeds_path, f'{seed}.png')).convert_alpha()
+            seed_surface = pygame.image.load(path.join(seeds_path, f"{seed}.png")).convert_alpha()
             self.seeds[seed] = seed_surface
 
     def draw_selection_box(self, x, y, image=None):

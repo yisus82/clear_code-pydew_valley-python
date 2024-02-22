@@ -48,6 +48,7 @@ class SoilLayer:
         self.create_grid()
         self.hit_rects = []
         self.create_hit_rects()
+        self.raining = False
 
     def create_grid(self):
         ground_path = path.join("..", "graphics", "world", "ground.png")
@@ -76,17 +77,26 @@ class SoilLayer:
                 if self.grid[y][x].farmable and not self.grid[y][x].has_patch:
                     self.grid[y][x].has_patch = True
                     self.create_soil_tiles()
+                    if self.raining:
+                        self.water_all()
+
+    def create_water_tile(self, soil_sprite):
+        x = soil_sprite.rect.x // TILESIZE
+        y = soil_sprite.rect.y // TILESIZE
+        if not self.grid[y][x].has_water:
+            self.grid[y][x].has_water = True
+            position = soil_sprite.rect.topleft
+            surface = choice(self.water_surfaces)
+            WaterTile(position, surface, [self.all_sprites, self.water_sprites])
 
     def water(self, target_pos):
         for soil_sprite in self.soil_sprites.sprites():
             if soil_sprite.rect.collidepoint(target_pos):
-                x = soil_sprite.rect.x // TILESIZE
-                y = soil_sprite.rect.y // TILESIZE
-                if not self.grid[y][x].has_water:
-                    self.grid[y][x].has_water = True
-                    position = soil_sprite.rect.topleft
-                    surface = choice(self.water_surfaces)
-                    WaterTile(position, surface, [self.all_sprites, self.water_sprites])
+                self.create_water_tile(soil_sprite)
+
+    def water_all(self):
+        for soil_sprite in self.soil_sprites.sprites():
+            self.create_water_tile(soil_sprite)
 
     def remove_water(self):
         # destroy all water sprites
@@ -111,47 +121,47 @@ class SoilLayer:
                     l = row[index_col - 1].has_patch
 
                     # single tile
-                    tile_type = 'o'
+                    tile_type = "o"
 
                     # all sides
                     if all((t, r, b, l)):
-                        tile_type = 'x'
+                        tile_type = "x"
 
                     # horizontal tiles only
                     if l and not any((t, r, b)):
-                        tile_type = 'r'
+                        tile_type = "r"
                     if r and not any((t, l, b)):
-                        tile_type = 'l'
+                        tile_type = "l"
                     if r and l and not any((t, b)):
-                        tile_type = 'lr'
+                        tile_type = "lr"
 
                     # vertical only
                     if t and not any((r, l, b)):
-                        tile_type = 'b'
+                        tile_type = "b"
                     if b and not any((r, l, t)):
-                        tile_type = 't'
+                        tile_type = "t"
                     if b and t and not any((r, l)):
-                        tile_type = 'tb'
+                        tile_type = "tb"
 
                     # corners
                     if l and b and not any((t, r)):
-                        tile_type = 'tr'
+                        tile_type = "tr"
                     if r and b and not any((t, l)):
-                        tile_type = 'tl'
+                        tile_type = "tl"
                     if l and t and not any((b, r)):
-                        tile_type = 'br'
+                        tile_type = "br"
                     if r and t and not any((b, l)):
-                        tile_type = 'bl'
+                        tile_type = "bl"
 
                     # T shapes
                     if all((t, b, r)) and not l:
-                        tile_type = 'tbr'
+                        tile_type = "tbr"
                     if all((t, b, l)) and not r:
-                        tile_type = 'tbl'
+                        tile_type = "tbl"
                     if all((l, r, t)) and not b:
-                        tile_type = 'lrb'
+                        tile_type = "lrb"
                     if all((l, r, b)) and not t:
-                        tile_type = 'lrt'
+                        tile_type = "lrt"
 
                     SoilTile((index_col * TILESIZE, index_row * TILESIZE), self.soil_surfaces[tile_type],
                              [self.all_sprites, self.soil_sprites])
@@ -162,4 +172,4 @@ class WaterTile(pygame.sprite.Sprite):
         super().__init__(groups)
         self.image = surface
         self.rect = self.image.get_rect(topleft=position)
-        self.sorting_layer = LAYERS['soil water']
+        self.sorting_layer = LAYERS["soil_water"]

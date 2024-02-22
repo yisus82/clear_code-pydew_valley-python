@@ -2,10 +2,12 @@ import pygame
 from pytmx.util_pygame import load_pygame
 
 from os import path
+from random import randint
 
 from camera_group import CameraGroup
 from overlay import Overlay
 from player import Player
+from sky import Rain
 from soil import SoilLayer
 from sprites import Generic, Interactive, Tree, Water, WildFlower
 from settings import LAYERS, TILESIZE
@@ -25,6 +27,9 @@ class Level:
         self.load_map()
         self.overlay = Overlay(self.player)
         self.transition = Transition(self.reset, self.player)
+        self.rain = Rain(self.all_sprites)
+        self.raining = randint(0, 10) > 3
+        self.soil_layer.raining = self.raining
 
     def load_map(self):
         map_path = path.join("..", "map", "map.tmx")
@@ -33,7 +38,7 @@ class Level:
         # house
         for layer in ["HouseFloor", "HouseFurnitureBottom"]:
             for x, y, surface in tmx_data.get_layer_by_name(layer).tiles():
-                Generic((x * TILESIZE, y * TILESIZE), surface, [self.all_sprites], LAYERS["house bottom"])
+                Generic((x * TILESIZE, y * TILESIZE), surface, [self.all_sprites], LAYERS["house_bottom"])
 
         for layer in ["HouseWalls", "HouseFurnitureTop"]:
             for x, y, surface in tmx_data.get_layer_by_name(layer).tiles():
@@ -59,15 +64,15 @@ class Level:
             WildFlower((obj.x, obj.y), obj.image, [self.all_sprites, self.collision_sprites])
 
         # collision tiles
-        for x, y, surface in tmx_data.get_layer_by_name('Collision').tiles():
+        for x, y, surface in tmx_data.get_layer_by_name("Collision").tiles():
             Generic((x * TILESIZE, y * TILESIZE), surface, [self.collision_sprites])
 
         # player
-        for obj in tmx_data.get_layer_by_name('Player'):
-            if obj.name == 'Start':
+        for obj in tmx_data.get_layer_by_name("Player"):
+            if obj.name == "Start":
                 self.player = Player((obj.x, obj.y), [self.all_sprites], self.collision_sprites,
                                      self.tree_sprites, self.interaction_sprites, self.soil_layer)
-            if obj.name == 'Bed':
+            if obj.name == "Bed":
                 Interactive((obj.x, obj.y), (obj.width, obj.height), [self.interaction_sprites],
                             obj.name)
 
@@ -83,6 +88,8 @@ class Level:
         self.overlay.display()
         if self.player.sleeping:
             self.transition.play()
+        if self.raining:
+            self.rain.update()
 
     def player_add(self, item, amount=1):
         self.player.item_inventory[item] += amount
@@ -99,3 +106,7 @@ class Level:
 
         # soil
         self.soil_layer.remove_water()
+        self.raining = randint(0, 10) > 3
+        self.soil_layer.raining = self.raining
+        if self.raining:
+            self.soil_layer.water_all()

@@ -1,13 +1,14 @@
 import pygame
 
 from os import path
-from random import choice, randint
+from random import choice
 
 from settings import FRUIT_POSITIONS, TILESIZE, LAYERS
+from timer import Timer
 
 
 class Generic(pygame.sprite.Sprite):
-    def __init__(self, position, surface=pygame.Surface((TILESIZE, TILESIZE)), groups=[], sorting_layer=LAYERS['main']):
+    def __init__(self, position, surface=pygame.Surface((TILESIZE, TILESIZE)), groups=[], sorting_layer=LAYERS["main"]):
         super().__init__(groups)
         self.position = position
         self.image = surface
@@ -31,13 +32,11 @@ class Particle(Generic):
         new_surface = mask_surface.to_surface()
         new_surface.set_colorkey((0, 0, 0))
         self.image = new_surface
-        self.start_time = pygame.time.get_ticks()
-        self.duration = duration
+        self.timer = Timer(duration, self.kill)
+        self.timer.activate()
 
     def update(self):
-        current_time = pygame.time.get_ticks()
-        if current_time - self.start_time > self.duration:
-            self.kill()
+        self.timer.update()
 
 
 class Tree(Generic):
@@ -64,13 +63,13 @@ class Tree(Generic):
         # remove a fruit
         if len(self.fruit_sprites.sprites()) > 0:
             random_fruit = choice(self.fruit_sprites.sprites())
-            Particle(random_fruit.rect.topleft, random_fruit.image, [self.groups()[0]], LAYERS['fruit'])
+            Particle(random_fruit.rect.topleft, random_fruit.image, [self.groups()[0]], LAYERS["fruit"])
             self.player_add("apple")
             random_fruit.kill()
 
     def check_death(self):
         if self.health <= 0:
-            Particle(self.rect.topleft, self.image, [self.groups()[0]], LAYERS['fruit'], 300)
+            Particle(self.rect.topleft, self.image, [self.groups()[0]], LAYERS["fruit"], 300)
             self.image = self.stump_surface
             self.rect = self.image.get_rect(midbottom=self.rect.midbottom)
             self.hitbox = self.rect.copy().inflate(-10, -self.rect.height * 0.6)
@@ -82,7 +81,7 @@ class Tree(Generic):
             x = position[0] + self.rect.left
             y = position[1] + self.rect.top
             Generic((x, y), self.fruit_surface, [self.fruit_sprites, self.groups()[0]],
-                    LAYERS['fruit'])
+                    LAYERS["fruit"])
 
     def update(self):
         if self.alive:
@@ -91,7 +90,7 @@ class Tree(Generic):
 
 class Water(Generic):
     def __init__(self, position, frames=[pygame.Surface((TILESIZE, TILESIZE))], groups=[]):
-        super().__init__(position, frames[0], groups, LAYERS['water'])
+        super().__init__(position, frames[0], groups, LAYERS["water"])
         self.frames = frames
         self.frame_index = 0
         self.animation_speed = 0.05

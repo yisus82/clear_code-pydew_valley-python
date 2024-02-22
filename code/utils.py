@@ -24,6 +24,6 @@ def import_folder_as_dict(folder):
         for image in img_files:
             full_path = path.join(pathname, image)
             image_surface = pygame.image.load(full_path).convert_alpha()
-            image_surfaces[image.split('.')[0]] = image_surface
+            image_surfaces[image.split(".")[0]] = image_surface
 
     return image_surfaces
