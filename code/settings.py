@@ -32,3 +32,7 @@ PLAYER_TOOL_OFFSET = {
     "up": Vector2(0, -10),
     "down": Vector2(0, 50),
 }
+GROW_SPEED = {
+    "corn": 1,
+    "tomato": 0.7,
+}

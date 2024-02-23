@@ -144,14 +144,14 @@ class Player(pygame.sprite.Sprite):
         if self.rect is not None:
             if direction == "horizontal":
                 for sprite in self.collision_sprites:
-                    if sprite.hitbox.colliderect(self.hitbox):
+                    if sprite.hitbox and sprite.hitbox.colliderect(self.hitbox):
                         if self.direction.x > 0:  # moving right
                             self.hitbox.right = sprite.hitbox.left
                         elif self.direction.x < 0:  # moving left
                             self.hitbox.left = sprite.hitbox.right
             elif direction == "vertical":
                 for sprite in self.collision_sprites:
-                    if sprite.hitbox.colliderect(self.hitbox):
+                    if sprite.hitbox and sprite.hitbox.colliderect(self.hitbox):
                         if self.direction.y > 0:  # moving down
                             self.hitbox.bottom = sprite.hitbox.top
                         elif self.direction.y < 0:  # moving up
@@ -181,7 +181,7 @@ class Player(pygame.sprite.Sprite):
             self.soil_layer.water(self.target_position)
 
     def plant_seed(self):
-        print(self.selected_seed, "planted")
+        self.soil_layer.plant_seed(self.target_position, self.selected_seed)
 
     def animate(self):
         if self.status in self.animations:

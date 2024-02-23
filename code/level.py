@@ -23,7 +23,7 @@ class Level:
         self.collision_sprites = pygame.sprite.Group()
         self.tree_sprites = pygame.sprite.Group()
         self.interaction_sprites = pygame.sprite.Group()
-        self.soil_layer = SoilLayer(self.all_sprites)
+        self.soil_layer = SoilLayer(self.all_sprites, self.collision_sprites)
         self.load_map()
         self.overlay = Overlay(self.player)
         self.transition = Transition(self.reset, self.player)
@@ -96,6 +96,9 @@ class Level:
         print(self.player.item_inventory)
 
     def reset(self):
+        # plants
+        self.soil_layer.update_plants()
+
         # fruits on trees
         for tree in self.tree_sprites:
             if tree.alive:
