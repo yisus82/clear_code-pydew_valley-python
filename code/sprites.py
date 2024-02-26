@@ -3,6 +3,7 @@ import pygame
 from os import path
 from random import choice
 
+from camera_group import CameraGroup
 from settings import FRUIT_POSITIONS, TILESIZE, LAYERS
 from timer import Timer
 
@@ -16,6 +17,12 @@ class Generic(pygame.sprite.Sprite):
         self.hitbox = self.rect.inflate(-self.rect.width * 0.2, -self.rect.height * 0.75)
         self.sorting_layer = sorting_layer
         self.sprite_type = "generic"
+
+
+class Fruit(Generic):
+    def __init__(self, position, surface, groups, sorting_layer, fruit_type="apple"):
+        super().__init__(position, surface, groups, sorting_layer)
+        self.fruit_type = fruit_type
 
 
 class Interactive(Generic):
@@ -44,9 +51,12 @@ class Tree(Generic):
         super().__init__(position, surface, groups)
         self.size = size
         self.player_add = player_add
+        for group in self.groups():
+            if isinstance(group, CameraGroup):
+                self.camera_group = group
+                break
         self.sprite_type = "tree"
         self.health = 5
-        self.alive = True
         stump_path = path.join("..", "graphics", "stumps", f"{self.size}.png")
         self.stump_surface = pygame.image.load(stump_path).convert_alpha()
 
@@ -59,33 +69,28 @@ class Tree(Generic):
 
     def take_damage(self, damage=1):
         self.health -= damage
-
-        # remove a fruit
-        if len(self.fruit_sprites.sprites()) > 0:
-            random_fruit = choice(self.fruit_sprites.sprites())
-            Particle(random_fruit.rect.topleft, random_fruit.image, [self.groups()[0]], LAYERS["fruit"])
-            self.player_add("apple")
-            random_fruit.kill()
-
-    def check_death(self):
         if self.health <= 0:
-            Particle(self.rect.topleft, self.image, [self.groups()[0]], LAYERS["fruit"], 300)
-            self.image = self.stump_surface
-            self.rect = self.image.get_rect(midbottom=self.rect.midbottom)
-            self.hitbox = self.rect.copy().inflate(-10, -self.rect.height * 0.6)
-            self.player_add("wood")
-            self.alive = False
+            self.die()
+        else:
+            # remove a fruit
+            if len(self.fruit_sprites.sprites()) > 0:
+                random_fruit = choice(self.fruit_sprites.sprites())
+                Particle(random_fruit.rect.topleft, random_fruit.image, [self.camera_group], LAYERS["fruit"])
+                self.player_add("apple")
+                random_fruit.kill()
+
+    def die(self):
+        Particle(self.rect.topleft, self.image, [self.camera_group], LAYERS["fruit"], 300)
+        self.image = self.stump_surface
+        self.rect = self.image.get_rect(midbottom=self.rect.midbottom)
+        self.hitbox = self.rect.copy().inflate(-10, -self.rect.height * 0.6)
+        self.player_add("wood")
 
     def create_fruits(self):
         for position in self.fruit_positions:
             x = position[0] + self.rect.left
             y = position[1] + self.rect.top
-            Generic((x, y), self.fruit_surface, [self.fruit_sprites, self.groups()[0]],
-                    LAYERS["fruit"])
-
-    def update(self):
-        if self.alive:
-            self.check_death()
+            Fruit((x, y), self.fruit_surface, [self.fruit_sprites, self.camera_group], LAYERS["fruit"])
 
 
 class Water(Generic):

@@ -9,7 +9,7 @@ from overlay import Overlay
 from player import Player
 from sky import Rain
 from soil import SoilLayer
-from sprites import Generic, Interactive, Tree, Water, WildFlower
+from sprites import Generic, Interactive, Particle, Tree, Water, WildFlower
 from settings import LAYERS, TILESIZE
 from transition import Transition
 from utils import import_folder
@@ -81,9 +81,18 @@ class Level:
         Generic((0, 0), pygame.image.load(ground_path).convert_alpha(), [self.all_sprites],
                 LAYERS["ground"])
 
+    def check_plant_collisions(self):
+        for plant in self.soil_layer.plant_sprites.sprites():
+            if plant.harvestable and plant.rect.colliderect(self.player.hitbox):
+                self.player_add(plant.plant_type)
+                plant.kill()
+                Particle(plant.rect.topleft, plant.image, [self.all_sprites], LAYERS["main"])
+                self.soil_layer.grid[plant.rect.centery // TILESIZE][plant.rect.centerx // TILESIZE].has_plant = False
+
     def run(self):
         self.display_surface.fill("black")
         self.all_sprites.update()
+        self.check_plant_collisions()
         self.all_sprites.custom_draw(self.player)
         self.overlay.display()
         if self.player.sleeping:
@@ -100,10 +109,10 @@ class Level:
         self.soil_layer.update_plants()
 
         # fruits on trees
-        for tree in self.tree_sprites:
-            if tree.alive:
+        for tree in self.tree_sprites.sprites():
+            if tree.health > 0:
                 tree.health = 5
-                for fruit in tree.fruit_sprites:
+                for fruit in tree.fruit_sprites.sprites():
                     fruit.kill()
                 tree.create_fruits()
 
