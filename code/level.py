@@ -7,7 +7,7 @@ from random import randint
 from camera_group import CameraGroup
 from overlay import Overlay
 from player import Player
-from sky import Rain
+from sky import Rain, Sky
 from soil import SoilLayer
 from sprites import Generic, Interactive, Particle, Tree, Water, WildFlower
 from settings import LAYERS, TILESIZE
@@ -30,6 +30,7 @@ class Level:
         self.rain = Rain(self.all_sprites)
         self.raining = randint(0, 10) > 3
         self.soil_layer.raining = self.raining
+        self.sky = Sky()
 
     def load_map(self):
         map_path = path.join("..", "map", "map.tmx")
@@ -90,21 +91,25 @@ class Level:
                 self.soil_layer.grid[plant.rect.centery // TILESIZE][plant.rect.centerx // TILESIZE].has_plant = False
 
     def run(self):
-        self.display_surface.fill("black")
-        self.all_sprites.update()
-        self.check_plant_collisions()
-        self.all_sprites.custom_draw(self.player)
-        self.overlay.display()
-        if self.player.sleeping:
-            self.transition.play()
-        if self.raining:
-            self.rain.update()
+            self.display_surface.fill("black")
+            self.all_sprites.update()
+            self.check_plant_collisions()
+            self.all_sprites.custom_draw(self.player)
+            self.overlay.display()
+            self.sky.display()
+            if self.raining:
+                self.rain.update()
+            if self.player.sleeping:
+                self.transition.play()
 
     def player_add(self, item, amount=1):
         self.player.item_inventory[item] += amount
         print(self.player.item_inventory)
 
     def reset(self):
+        # sky
+        self.sky.reset()
+
         # plants
         self.soil_layer.update_plants()
 

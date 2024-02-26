@@ -47,9 +47,28 @@ class Rain:
 
     def create_drops(self):
         RainDrop(choice(self.rain_drops_surfaces),
-            (randint(0, self.floor_width), randint(0, self.floor_height)),
-            [self.all_sprites], LAYERS["rain_drops"], True)
+                 (randint(0, self.floor_width), randint(0, self.floor_height)),
+                 [self.all_sprites], LAYERS["rain_drops"], True)
 
     def update(self):
         self.create_floor()
         self.create_drops()
+
+
+class Sky:
+    def __init__(self):
+        self.display_surface = pygame.display.get_surface()
+        self.full_surface = pygame.Surface((self.display_surface.get_width(), self.display_surface.get_height()))
+        self.start_color = (255, 255, 255)
+        self.end_color = (38, 101, 189)
+        self.current_color = [c for c in self.start_color]
+
+    def display(self):
+        for index, value in enumerate(self.end_color):
+            if self.current_color[index] > value:
+                self.current_color[index] -= 0.05
+        self.full_surface.fill(self.current_color)
+        self.display_surface.blit(self.full_surface, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+
+    def reset(self):
+        self.current_color = [c for c in self.start_color]
