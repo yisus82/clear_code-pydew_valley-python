@@ -5,6 +5,7 @@ from os import path
 from random import randint
 
 from camera_group import CameraGroup
+from menu import Menu
 from overlay import Overlay
 from player import Player
 from sky import Rain, Sky
@@ -31,6 +32,8 @@ class Level:
         self.raining = randint(0, 10) > 3
         self.soil_layer.raining = self.raining
         self.sky = Sky()
+        self.shop_active = False
+        self.menu = Menu(self.player, self.toggle_shop)
 
     def load_map(self):
         map_path = path.join("..", "map", "map.tmx")
@@ -72,8 +75,12 @@ class Level:
         for obj in tmx_data.get_layer_by_name("Player"):
             if obj.name == "Start":
                 self.player = Player((obj.x, obj.y), [self.all_sprites], self.collision_sprites,
-                                     self.tree_sprites, self.interaction_sprites, self.soil_layer)
+                                     self.tree_sprites, self.interaction_sprites, self.soil_layer, self.toggle_shop)
             if obj.name == "Bed":
+                Interactive((obj.x, obj.y), (obj.width, obj.height), [self.interaction_sprites],
+                            obj.name)
+
+            if obj.name == "Trader":
                 Interactive((obj.x, obj.y), (obj.width, obj.height), [self.interaction_sprites],
                             obj.name)
 
@@ -91,20 +98,25 @@ class Level:
                 self.soil_layer.grid[plant.rect.centery // TILESIZE][plant.rect.centerx // TILESIZE].has_plant = False
 
     def run(self):
-            self.display_surface.fill("black")
+        self.display_surface.fill("black")
+        self.all_sprites.custom_draw(self.player)
+        if self.shop_active:
+            self.menu.update()
+        else:
             self.all_sprites.update()
             self.check_plant_collisions()
-            self.all_sprites.custom_draw(self.player)
-            self.overlay.display()
-            self.sky.display()
-            if self.raining:
-                self.rain.update()
-            if self.player.sleeping:
-                self.transition.play()
+        self.overlay.display()
+        if self.raining and not self.shop_active:
+            self.rain.update()
+        self.sky.display()
+        if self.player.sleeping:
+            self.transition.play()
 
     def player_add(self, item, amount=1):
         self.player.item_inventory[item] += amount
-        print(self.player.item_inventory)
+
+    def toggle_shop(self):
+        self.shop_active = not self.shop_active
 
     def reset(self):
         # sky

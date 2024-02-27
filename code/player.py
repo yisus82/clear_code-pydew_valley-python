@@ -8,12 +8,13 @@ from utils import import_folder
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, position, groups, collision_sprites, tree_sprites, interaction_sprites, soil_layer):
+    def __init__(self, position, groups, collision_sprites, tree_sprites, interaction_sprites, soil_layer, toggle_shop):
         super().__init__(groups)
         self.collision_sprites = collision_sprites
         self.tree_sprites = tree_sprites
         self.interaction_sprites = interaction_sprites
         self.soil_layer = soil_layer
+        self.toggle_shop = toggle_shop
         self.sorting_layer = LAYERS["main"]
         self.animations = {}
         self.import_animations()
@@ -39,6 +40,11 @@ class Player(pygame.sprite.Sprite):
             "corn": 0,
             "tomato": 0,
         }
+        self.seed_inventory = {
+            "corn": 5,
+            "tomato": 5,
+        }
+        self.money = 200
         self.timers = {
             "select_tool": Timer(200),
             "use_tool": Timer(500, self.use_tool),
@@ -125,6 +131,8 @@ class Player(pygame.sprite.Sprite):
                             self.hitbox.center = collided_interactive.rect.center
                             self.rect.center = self.hitbox.center
                             self.sleeping = True
+                        if collided_interactive.name == "Trader":
+                            self.toggle_shop()
 
     def update_status(self):
         if self.direction.x == 0 and self.direction.y == 0:
@@ -181,7 +189,9 @@ class Player(pygame.sprite.Sprite):
             self.soil_layer.water(self.target_position)
 
     def plant_seed(self):
-        self.soil_layer.plant_seed(self.target_position, self.selected_seed)
+        if self.seed_inventory[self.selected_seed] > 0:
+            self.soil_layer.plant_seed(self.target_position, self.selected_seed)
+            self.seed_inventory[self.selected_seed] -= 1
 
     def animate(self):
         if self.status in self.animations:
