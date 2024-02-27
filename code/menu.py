@@ -32,6 +32,8 @@ class Menu:
         self.sell_text = self.font.render("sell", False, "Black")
         self.selected_index = 0
         self.timer = Timer(200)
+        self.success_sound = pygame.mixer.Sound(path.join("..", "audio", "success.wav"))
+        self.success_sound.set_volume(0.3)
 
     def display_money(self):
         text_surface = self.font.render(f"${self.player.money}", False, "Black")
@@ -57,11 +59,13 @@ class Menu:
                 # sell
                 if self.selected_index <= self.sell_border:
                     if self.player.item_inventory[current_item] > 0:
+                        self.success_sound.play()
                         self.player.item_inventory[current_item] -= 1
                         self.player.money += SALE_PRICES[current_item]
                 # buy
                 else:
                     if self.player.money >= PURCHASE_PRICES[current_item]:
+                        self.success_sound.play()
                         self.player.seed_inventory[current_item] += 1
                         self.player.money -= PURCHASE_PRICES[current_item]
 

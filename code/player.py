@@ -51,6 +51,14 @@ class Player(pygame.sprite.Sprite):
             "select_seed": Timer(200),
             "plant_seed": Timer(500, self.plant_seed),
         }
+        self.audios = {
+            "axe": pygame.mixer.Sound(path.join("..", "audio", "axe.mp3")),
+            "hoe": pygame.mixer.Sound(path.join("..", "audio", "hoe.wav")),
+            "water": pygame.mixer.Sound(path.join("..", "audio", "water.mp3")),
+            "plant": pygame.mixer.Sound(path.join("..", "audio", "plant.wav")),
+        }
+        for audio in self.audios.values():
+            audio.set_volume(0.3)
 
     def import_animations(self):
         player_folder = path.join("..", "graphics", "player")
@@ -179,6 +187,7 @@ class Player(pygame.sprite.Sprite):
         self.target_position = self.rect.center + PLAYER_TOOL_OFFSET[self.status.split("_")[0]]
 
     def use_tool(self):
+        self.audios[self.selected_tool].play()
         if self.selected_tool == "axe":
             for tree in self.tree_sprites.sprites():
                 if tree.rect.collidepoint(self.target_position):
@@ -190,6 +199,7 @@ class Player(pygame.sprite.Sprite):
 
     def plant_seed(self):
         if self.seed_inventory[self.selected_seed] > 0:
+            self.audios["plant"].play()
             self.soil_layer.plant_seed(self.target_position, self.selected_seed)
             self.seed_inventory[self.selected_seed] -= 1
 

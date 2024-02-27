@@ -34,6 +34,11 @@ class Level:
         self.sky = Sky()
         self.shop_active = False
         self.menu = Menu(self.player, self.toggle_shop)
+        self.background_music = pygame.mixer.Sound(path.join("..", "audio", "music.mp3"))
+        self.background_music.set_volume(0.5)
+        self.background_music.play(loops=-1)
+        self.success_sound = pygame.mixer.Sound(path.join("..", "audio", "success.wav"))
+        self.success_sound.set_volume(0.3)
 
     def load_map(self):
         map_path = path.join("..", "map", "map.tmx")
@@ -114,6 +119,7 @@ class Level:
 
     def player_add(self, item, amount=1):
         self.player.item_inventory[item] += amount
+        self.success_sound.play()
 
     def toggle_shop(self):
         self.shop_active = not self.shop_active
